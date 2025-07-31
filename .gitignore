@@ -6,6 +6,12 @@ Foto bosmina
 Foto bosmina.rar
 image.png
 interpreting-computer-vision-models.ipynb
+RISE/
+unzipped_data_full/
+data_full.zip
+rise_6000_masks.ipynb
+masks.npy
+best_model.pth
 
 myenv/
 
