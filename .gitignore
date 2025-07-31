@@ -12,6 +12,7 @@ data_full.zip
 rise_6000_masks.ipynb
 masks.npy
 best_model.pth
+rise_6000_masks_out.ipynb
 
 myenv/
 
