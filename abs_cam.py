@@ -108,8 +108,8 @@ class AbsCAMFinal:
         # print("M1:", M1.min().item(), M1.max().item(), M1.mean().item())
         with torch.no_grad():
             output_M1 = self.model(M1)
-            prob = torch.softmax(output_M1, dim=1)
-            yc_M1 = prob[:, class_idx]
+            # prob = torch.softmax(output_M1, dim=1)
+            yc_M1 = output_M1[:, class_idx]
             # print(f"yc_M1 = {yc_M1.item():.4f}")
 
         # print(f"yc_M1 = {yc_M1.item():.4f}, M0 mean = {M0.mean().item():.4f}")

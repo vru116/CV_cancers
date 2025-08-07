@@ -45,7 +45,7 @@ class CausalMetric():
         self.step = step
         self.substrate_fn = substrate_fn
 
-    def single_run(self, img_tensor, explanation, class_names, device, verbose=0, save_to=None, mode='rise'):
+    def single_run(self, img_tensor, explanation, class_names, device, verbose=0, save_to=None):
         r"""Run metric on one image-saliency pair.
 
         Args:
@@ -61,8 +61,7 @@ class CausalMetric():
             scores (nd.array): Array containing scores at every step.
         """
         pred = self.model(img_tensor.cuda())
-        if mode == 'abs_cam':
-            pred = F.softmax(pred, dim=1)
+        pred = F.softmax(pred, dim=1)
 
         top, c = torch.max(pred, 1)
         c = c.cpu().numpy()[0]
@@ -86,9 +85,10 @@ class CausalMetric():
         # Coordinates of pixels in order of decreasing saliency
         salient_order = np.flip(np.argsort(explanation.reshape(-1, HW), axis=1), axis=-1)
         for i in range(n_steps+1):
+            # print(start.shape)
             pred = self.model(start.cuda())
-            if mode == 'abs_cam':
-                pred = F.softmax(pred, dim=1)
+            pred = F.softmax(pred, dim=1)
+
             pr, cl = torch.topk(pred, 2)
             if verbose == 2:
                 print('{}: {:.3f}'.format(class_names[cl[0][0].item()], float(pr[0][0])))
@@ -123,7 +123,7 @@ class CausalMetric():
                 start = torch.from_numpy(start_np).to(device)
         return scores
 
-    def evaluate(self, img_batch, exp_batch, device, batch_size, mode='rise'):
+    def evaluate(self, img_batch, exp_batch, device, batch_size):
         r"""Efficiently evaluate big batch of images.
 
         Args:
@@ -138,17 +138,15 @@ class CausalMetric():
 
         predictions = torch.FloatTensor(n_samples, n_classes)
         assert n_samples % batch_size == 0
-        for i in tqdm(range(n_samples // batch_size), desc='Predicting labels'):
+        # for i in tqdm(range(n_samples // batch_size), desc='Predicting labels'):
+        for i in range(n_samples // batch_size):
             preds = self.model(img_batch[i*batch_size:(i+1)*batch_size].cuda()).cpu()
-            if mode == 'abs_cam':
-                preds = F.softmax(preds, dim=1)
+            preds = F.softmax(preds, dim=1)
+
             predictions[i*batch_size:(i+1)*batch_size] = preds
 
-        if mode == 'rise':
-            top = np.argmax(predictions, -1)
-        else:
-            predictions = predictions.detach().numpy()
-            top = np.argmax(predictions, -1)
+        predictions = predictions.detach().numpy()
+        top = np.argmax(predictions, -1)
 
         n_steps = (HW + self.step - 1) // self.step
         scores = np.empty((n_steps + 1, n_samples))
@@ -156,7 +154,8 @@ class CausalMetric():
         r = np.arange(n_samples).reshape(n_samples, 1)
 
         substrate = torch.zeros_like(img_batch)
-        for j in tqdm(range(n_samples // batch_size), desc='Substrate'):
+        # for j in tqdm(range(n_samples // batch_size), desc='Substrate'):
+        for j in range(n_samples // batch_size):
             substrate[j*batch_size:(j+1)*batch_size] = self.substrate_fn(img_batch[j*batch_size:(j+1)*batch_size])
 
         if self.mode == 'del':
@@ -172,17 +171,14 @@ class CausalMetric():
         finish_np = finish.cpu().numpy()
 
         # While not all pixels are changed
-        for i in tqdm(range(n_steps+1), desc=caption + 'pixels'):
+        # for i in tqdm(range(n_steps+1), desc=caption + 'pixels'):
+        for i in range(n_steps+1):
             # Iterate over batches
             for j in range(n_samples // batch_size):
                 # Compute new scores
                 preds = self.model(start[j*batch_size:(j+1)*batch_size].cuda())
-
-                if mode == 'rise':
-                    preds = preds.cpu().numpy()[range(batch_size), top[j*batch_size:(j+1)*batch_size]]
-                else:
-                    preds = F.softmax(preds, dim=1)
-                    preds = preds.detach().cpu().numpy()[range(batch_size), top[j*batch_size:(j+1)*batch_size]]
+                preds = F.softmax(preds, dim=1)
+                preds = preds.detach().cpu().numpy()[range(batch_size), top[j*batch_size:(j+1)*batch_size]]
 
                 scores[i, j*batch_size:(j+1)*batch_size] = preds
             # Change specified number of most salient pixels to substrate pixels
