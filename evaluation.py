@@ -121,6 +121,8 @@ class CausalMetric():
                 coords = salient_order[:, self.step * i:self.step * (i + 1)]
                 start_np.reshape(1, 3, HW)[0, :, coords] = finish_np.reshape(1, 3, HW)[0, :, coords]
                 start = torch.from_numpy(start_np).to(device)
+            # if i == n_steps:
+            #     print(start.min(), start.max(), start.mean())
         return scores
 
     def evaluate(self, img_batch, exp_batch, device, batch_size):

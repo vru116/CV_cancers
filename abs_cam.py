@@ -41,19 +41,22 @@ class AbsCAMInit:
         # print(gradients.shape)
         activations = self.activations
 
-        weights = gradients.abs().mean(dim=(2, 3), keepdim=True)
-        cam = (weights * activations).sum(dim=1, keepdim=True)
+        # B, C, H, W = gradients.shape
+        # print(gradients.shape)
+        abs_gradients = gradients.abs()
+        weights = abs_gradients.mean(dim=(2, 3), keepdim=True)  # shape: (B, C, 1, 1)
+        # print(weights.shape)
+        weighted_activations = weights * activations  # shape: (B, C, H, W)
+        # print(weighted_activations.shape)
+        cam = weighted_activations.sum(dim=1, keepdim=True)  # shape: (B, 1, H, W)
 
-        cam = F.relu(cam)
-        cam = F.interpolate(cam, size=(224, 224), mode='bilinear', align_corners=False)
-        cam = cam.squeeze().detach().cpu().numpy()
+        # cam = F.relu(cam)
+        cam = F.interpolate(cam, size=(input_tensor.shape[2], input_tensor.shape[3]), mode='bilinear', align_corners=False)
 
-        cam -= cam.min()
-        cam /= cam.max() + 1e-8
-        # print("S0:", cam.min().item(), cam.max().item(), cam.mean().item())
-        return cam
-
-
+        cam = cam - cam.min()
+        cam = cam / (cam.max() + 1e-8)
+        # print(f"cam {cam.shape}")
+        return cam.detach().squeeze().cpu().numpy()
 
 
 class AbsCAMFinal:
@@ -83,36 +86,50 @@ class AbsCAMFinal:
 
     def __call__(self, input_tensor, class_idx=None):
         input_tensor = input_tensor.to(self.device)
-        input_tensor.requires_grad = True
         self.model.zero_grad()
 
         output = self.model(input_tensor)
         if class_idx is None:
             class_idx = output.argmax(dim=1).item()
         score = output[:, class_idx]
-        score.backward(retain_graph=True)
+        score.backward()
 
         gradients = self.gradients
+        # print(gradients.shape)
         activations = self.activations
 
-        weights = gradients.abs().mean(dim=(2, 3), keepdim=True)
-        cam = (weights * activations).sum(dim=1, keepdim=True)
-        # cam = F.relu(cam)
-        cam = F.interpolate(cam, size=(input_tensor.shape[2], input_tensor.shape[3]), mode='bilinear', align_corners=False)
-        cam_norm = cam - cam.min()
-        cam_norm = cam_norm / (cam_norm.max() + 1e-8)
-        M0 = cam_norm 
-        # print("M0:", M0.min().item(), M0.max().item(), M0.mean().item())
+        B, C, H1, W1 = gradients.shape
+        # print(gradients.shape)
+        abs_gradients = gradients.abs()
+        weights = abs_gradients.mean(dim=(2, 3), keepdim=True)  # shape: (B, C, 1, 1)
+        # print(weights.shape)
+        weighted_activations = weights * activations  # shape: (B, C, H, W)
+        # print(weighted_activations.shape)
+        M0_k = weighted_activations
+        # M0_k = F.relu(M0_k)
 
-        M1 = input_tensor * M0.repeat(1, 3, 1, 1)
-        # print("M1:", M1.min().item(), M1.max().item(), M1.mean().item())
+        M0_k = F.interpolate(M0_k, size=(input_tensor.shape[2], input_tensor.shape[3]), mode='bilinear', align_corners=False)
+
+        M0_k = M0_k - M0_k.view(B, C, -1).min(dim=2, keepdim=True)[0].unsqueeze(-1)
+        M0_k = M0_k / (M0_k.view(B, C, -1).max(dim=2, keepdim=True)[0].unsqueeze(-1) + 1e-8)
+        # (B, C, H, W)
+        # print(f"M0k {M0_k.shape}")
+        X0 = input_tensor  # (B, 3, H, W)
+        M1_k = X0.unsqueeze(1) * M0_k.unsqueeze(2)  # (B, C, 3, H, W)
+        # print(M1_k.shape)
+        M1_k = M1_k.view(B * C, 3, input_tensor.shape[2], input_tensor.shape[3])  # (B*C, 3, H, W)
+
         with torch.no_grad():
-            output_M1 = self.model(M1)
-            # prob = torch.softmax(output_M1, dim=1)
-            yc_M1 = output_M1[:, class_idx]
-            # print(f"yc_M1 = {yc_M1.item():.4f}")
+            y_M1 = self.model(M1_k)  # (B*C, num_classes)
+            # y_M1 = torch.softmax(y_M1, dim=1)
+            y_c = y_M1[:, class_idx]  # (B*C,)
 
-        # print(f"yc_M1 = {yc_M1.item():.4f}, M0 mean = {M0.mean().item():.4f}")
+        y_c = y_c.view(B, C, 1, 1)
+        y_c = y_c.abs()
 
-        Lc = F.relu(yc_M1.item() * M0.squeeze())
-        return Lc.cpu().numpy()
+        # print("M0_k:", M0_k.min().item(), M0_k.max().item(), M0_k.mean().item())
+        # print("y_c:", y_c.min().item(), y_c.max().item(), y_c.mean().item())
+        # print("(y_c * M0_k).sum:", ((y_c * M0_k).sum(dim=1)).min().item(), ((y_c * M0_k).sum(dim=1)).max().item())
+
+        Lc = F.relu((y_c * M0_k).sum(dim=1))
+        return Lc.squeeze().cpu().detach().numpy()
