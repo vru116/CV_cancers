@@ -5,8 +5,8 @@
 
 ## Возможности
 - Реализация XAI-методов:
-  - **Abs-CAM Init**
-  - **Abs-CAM Final**
+  - **Abs-CAM Init** (карты важности для разных слоёв: layer1, layer2, layer3, layer4)
+  - **Abs-CAM Final** (карты важности для разных слоёв: layer1, layer2, layer3, layer4)
   - **RISE с оригинальной генерацией масок**
   - **RISE с генерацией масок через Гауссовское распределение**
 - Метрики качества объяснений:
@@ -48,11 +48,9 @@ pip install -r requirements.txt
 
 ## Примеры результатов
 
-| Исходное изображение | Abs-CAM Init(для 4 слоя) карта важности | RISE карта важности 
+| Исходное изображение | Abs-CAM Init (layer4) | RISE (orig masks)
 |---------------------|-------------------|----------------------|
 | <img src="./examples/input_sample_2.png" width="300"> | <img src="./examples/abs_cam_init_l4_sample_2.png" width="300"> | <img src="./examples/rise_orig_sample_2.png" width="300"> |
-
-
 
 
 ## Ссылки на статьи
