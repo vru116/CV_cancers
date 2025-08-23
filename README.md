@@ -17,32 +17,21 @@
 
 ## Структура проекта
 
+```
 XAI_methods_for_CV/
-
 ├── notebooks/         # демонстрации в Jupyter
-
 ├── src/
-
 │ ├── methods/         # реализации XAI методов
-
 │ │ ├── abs_cam.py
-
 │ │ └── rise_model.py
-
 │ ├── common/
-
 │ │ ├── evaluation.py  # метрики Insertion / Deletion
-
 │ │ └── utils.py       # вспомогательные функции
-
 ├── .gitignore
-
 ├── README.md
-
 ├── requirements.txt  
-
 └── requirements_cluster.txt  
-
+```
 
 ## Установка
 
