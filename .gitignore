@@ -5,19 +5,19 @@ data_full/
 Foto bosmina
 Foto bosmina.rar
 image.png
-interpreting-computer-vision-models.ipynb
+notebooks/interpreting-computer-vision-models.ipynb
 RISE/
 unzipped_data_full/
 data_full.zip
-rise_6000_masks.ipynb
+notebooks/rise_6000_masks.ipynb
 masks.npy
 best_model.pth
-rise_6000_masks_out.ipynb
+notebooks/rise_6000_masks_out.ipynb
 results1.docx
 ~$sults1.docx
 desktop.ini
-rise_600_masks_imagenet.ipynb
-Evaluation.ipynb
+notebooks/rise_600_masks_imagenet.ipynb
+notebooks/Evaluation.ipynb
 synset_words.txt
 masks_binary_p_0.1.npy
 masks_binary_p_0.3.npy
@@ -25,13 +25,30 @@ masks_binary_p_0.5.npy
 masks_binary_p_0.7.npy
 masks_gaussian.npy
 masks_perlin.npy
-rise2.ipynb
-rise3.ipynb
+notebooks/rise2.ipynb
+notebooks/rise3.ipynb
 unseen_images/
-rise_6000_masks_gaus.ipynb
-rise_6000_masks_p03.ipynb
+notebooks/rise_6000_masks_gaus.ipynb
+notebooks/rise_6000_masks_p03.ipynb
 results2.docx
-rise_600_masks copy.ipynb
+notebooks/rise_600_masks copy.ipynb
+~$sults_gauss.docx
+~$sults3.docx
+~WRL0264.tmp
+masks/
+cbrise/
+res_all.docx
+results_CB_RISE_description.docx
+results_gauss.docx
+results3.docx
+notebooks/rise4_6000_masks_gauss2.ipynb
+notebooks/abs_cam_imagenet.ipynb
+notebooks/rise_try_cb_rise.ipynb
+notebooks/rise4_save.ipynb
+notebooks/rise4.nbconvert.ipynb
+results_pdf/
+results/
+results.zip
 
 myenv/
 
