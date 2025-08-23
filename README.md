@@ -48,9 +48,9 @@ pip install -r requirements.txt
 
 ## Примеры результатов
 
-| Исходное изображение | Abs-CAM карта важности | RISE карта важности 
+| Исходное изображение | Abs-CAM Init(для 4 слоя) карта важности | RISE карта важности 
 |---------------------|-------------------|----------------------|
-| <img src="./examples/input_sample_2.png" width="200"> | <img src="./examples/abs_cam_init_l4_sample_2.png" width="200"> | <img src="./examples/rise_orig_sample_2.png" width="200"> |
+| <img src="./examples/input_sample_2.png" width="300"> | <img src="./examples/abs_cam_init_l4_sample_2.png" width="300"> | <img src="./examples/rise_orig_sample_2.png" width="300"> |
 
 
 
