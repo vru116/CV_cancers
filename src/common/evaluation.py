@@ -4,7 +4,7 @@ from scipy.ndimage.filters import gaussian_filter
 import torch.nn.functional as F
 import torch
 
-from src.methods.utils import *
+from src.common.utils import *
 
 HW = 224 * 224 # image area
 n_classes = 4
